@@ -1,0 +1,85 @@
+---
+title: "Crosstalk"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    source_code: embed
+    social: [ "twitter", "facebook", "menu" ]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r data}
+# Load ipeds data
+source("load_data.r")
+
+# Wrap data in SharedData to use with crosstalk
+sd <- SharedData$new(colleges)
+```
+
+
+Inputs {.sidebar}
+-------------------------------------
+
+```{r filters}
+# Filter input - Sector
+filter_checkbox(id = "sector", 
+              label = "Select College Sectors",
+              sharedData = sd, 
+              group = ~sector)
+
+# Filter input - State
+filter_select(id = "st", 
+              label = "Select States",
+              sharedData = sd, 
+              group = ~st)
+
+# Filter slider - capital giving 2016
+filter_slider(id = "apps", 
+              label = "2016 Applications",
+              sharedData = sd, 
+              column = ~apps16)
+```
+
+Row
+-------------------------------------
+
+### Map
+```{r map}
+# Create color palette that maps college sector to colors
+pal <- colorFactor(palette = c("#1f78b4", "#33a02c", "#ff7f00"), 
+                   domain  = c("Public", "Private not-for-profit", "Private for-profit"))
+
+# Create leaflet map
+sd %>% 
+  leaflet() %>% 
+    addProviderTiles("CartoDB") %>% 
+    addCircles(popup = ~name, 
+               color = ~pal(sector)) 
+```
+
+### Chart 
+```{r chart}
+# Create plotly graph
+plot_ly(sd, x = ~st) %>%
+  add_histogram()
+```
+
+Row
+-------------------------------------
+
+### Table
+```{r table}
+# Create DT
+datatable(sd, extensions= c('Buttons', "Scroller"), 
+          class="compact", width="100%", rownames = FALSE, 
+            options=list(
+              dom = 'Blfrtip',
+              deferRender=TRUE, 
+              scrollY=300,
+              scroller=TRUE, 
+              columnDefs = list(list(visible=FALSE, targets=c(0, 2,  3, 7))), 
+              buttons = list(I('colvis'), 'csv', 'excel')))
+```
