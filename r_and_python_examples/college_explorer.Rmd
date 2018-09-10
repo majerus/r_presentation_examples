@@ -36,7 +36,7 @@ filter_select(id = "st",
               sharedData = sd, 
               group = ~st)
 
-# Filter slider - capital giving 2016
+# Filter slider - Applications 2016
 filter_slider(id = "apps", 
               label = "2016 Applications",
               sharedData = sd, 
